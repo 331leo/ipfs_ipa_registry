@@ -1,13 +1,13 @@
 // Import Packages, Init Project
-require("dotenv").config();
-const { Web3Storage, getFilesFromPath } = require("web3.storage");
-const prompt = require("prompt-sync")();
-const fs = require("fs");
-const insertData = require("./db").insertData;
-const { exit } = require("process");
-// var mongoose = require("mongoose");
-// mongoose.connect(process.env.MONGO_URL);
-// var db = mongoose.connection;
+import { config } from "dotenv";
+config();
+import { Web3Storage, getFilesFromPath } from "web3.storage";
+import promptSync from "prompt-sync";
+const prompt = promptSync();
+import fs from "fs";
+import { exit } from "process";
+import { insertData } from "./db.js";
+import { getMeta } from "./meta.js";
 
 // Application Data prompt
 let filePath = prompt("Enter the path to the file: ").replace(/"/g, "");
@@ -26,7 +26,7 @@ fs.rename(filePath, newFilePath, (err) => {
   if (err) {
     throw err;
   }
-  console.log("finish");
+  console.log(".ipa File Renamed!\n\n");
 });
 
 // Put the file in the IPFS Network
@@ -34,15 +34,22 @@ const web3Client = new Web3Storage({ token: process.env.WEB3TOKEN });
 async function storeWithProgress() {
   try {
     const files = await getFilesFromPath(newFilePath);
+
     // show the root cid as soon as it's ready
+    const meta = await getMeta(appName);
     const onRootCidReady = (cid) => {
-      console.log("uploading files with cid:", cid);
+      console.log(
+        `Uploading ipa to IPFS Network\nApp: ${appName}, Version: ${appVersion}, bundleID: ${meta.bundleID}\nCID: ${cid}`
+      );
       const data = {
         name: appName,
         version: appVersion,
         region: appRegion,
         cid: cid,
         file: fileName,
+        artwork: meta.artwork,
+        bundleID: meta.bundleID,
+        genres: meta.genres,
       };
       insertData(data);
       // const appendString = `${appName},${appVersion},${appRegion},${cid},${fileName}`;
@@ -60,7 +67,6 @@ async function storeWithProgress() {
       const pct = totalSize / uploaded;
       console.log(`Uploading... ${100 - pct.toFixed(2)}%`);
     };
-
     return await web3Client.put(files, {
       name: fileName,
       maxRetries: 10,
