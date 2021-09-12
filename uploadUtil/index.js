@@ -11,10 +11,20 @@ import { getMeta } from "./meta.js";
 
 // Application Data prompt
 let filePath = prompt("Enter the path to the file: ").replace(/"/g, "");
-const appName = prompt("Enter the name of the app: ");
+let appName = prompt("Enter the name of the app: ");
 const appVersion = prompt("Enter the version of the app: ");
 let appRegion = prompt("Enter the region of the app(blank for Global): ");
 appRegion = appRegion ? appRegion === "" : "Global";
+getMeta(appName).then((meta) => {
+  if (meta.trackName) {
+    appName = meta.trackName;
+    console.log(
+      `\nFound App on App Store!: ${meta.trackName}\nLastest Version on App Store: ${meta.latestVersion}\nView on App Store: ${meta.link}\n`
+    );
+  }
+});
+
+await new Promise((resolve) => setTimeout(resolve, 1000));
 
 // Rename File
 const fileName = `${appName.replaceAll(
@@ -26,8 +36,10 @@ fs.rename(filePath, newFilePath, (err) => {
   if (err) {
     throw err;
   }
-  console.log(".ipa File Renamed!\n\n");
+  console.log(".ipa File Renamed!\n");
 });
+
+await new Promise((resolve) => setTimeout(resolve, 1000));
 
 // Put the file in the IPFS Network
 const web3Client = new Web3Storage({ token: process.env.WEB3TOKEN });
@@ -36,27 +48,14 @@ async function storeWithProgress() {
     const files = await getFilesFromPath(newFilePath);
 
     // show the root cid as soon as it's ready
-    const meta = await getMeta(appName);
+
     const onRootCidReady = (cid) => {
-      console.log(
-        `Uploading ipa to IPFS Network\nApp: ${appName}, Version: ${appVersion}, bundleID: ${meta.bundleID}\nCID: ${cid}`
-      );
-      const data = {
-        name: appName,
-        version: appVersion,
-        region: appRegion,
-        cid: cid,
-        file: fileName,
-        artwork: meta.artwork,
-        bundleID: meta.bundleID,
-        genres: meta.genres,
-      };
-      insertData(data);
       // const appendString = `${appName},${appVersion},${appRegion},${cid},${fileName}`;
       // fs.appendFile("data.csv", appendString, function (err) {
       //   if (err) return console.log(err);
       //   console.log(`${appendString}\nAppended data to CSV!`);
       // });
+      console.log(`Uploading to IPFS Network: ${cid}`);
     };
 
     const totalSize = files.map((f) => f.size).reduce((a, b) => a + b, 0);
@@ -79,6 +78,27 @@ async function storeWithProgress() {
   }
 }
 
-storeWithProgress().then(() => {
-  exit();
+storeWithProgress().then((cid) => {
+  (async (cid) => {
+    const meta = await getMeta(appName);
+    console.log(
+      `Uploaded ipa to IPFS Network\nApp: ${appName}, Version: ${appVersion}, bundleID: ${meta.bundleID}\nCID: ${cid}`
+    );
+    const data = {
+      name: appName,
+      version: appVersion,
+      region: appRegion,
+      cid: cid,
+      file: fileName,
+      artwork: meta.artwork,
+      bundleID: meta.bundleID,
+      genres: meta.genres,
+      link: meta.link,
+      artistName: meta.artistName,
+    };
+    insertData(data).then((res) => {
+      console.log(res);
+      exit();
+    });
+  })(cid);
 });
