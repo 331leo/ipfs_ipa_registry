@@ -12,14 +12,15 @@ db.once("open", function () {
 });
 
 var IpfsFile = mongoose.model(
-  "Schema",
+  "ipfs",
   mongoose.Schema({
-    name: "string",
-    version: "string",
-    region: "string",
-    cid: { type: "string", required: true, unique: true },
-    file: "string",
-  })
+    name: String,
+    version: String,
+    region: String,
+    cid: { type: String, required: true, unique: true },
+    file: String,
+  }),
+  "ipfs"
 );
 
 async function insertData(data) {

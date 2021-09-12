@@ -73,4 +73,6 @@ async function storeWithProgress() {
   }
 }
 
-storeWithProgress();
+storeWithProgress().then(() => {
+  exit();
+});
