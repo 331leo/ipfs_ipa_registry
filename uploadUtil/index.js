@@ -96,9 +96,7 @@ storeWithProgress().then((cid) => {
       link: meta.link,
       artistName: meta.artistName,
     };
-    insertData(data).then((res) => {
-      console.log(res);
-      exit();
-    });
+    await insertData(data);
+    new Promise((resolve) => setTimeout(resolve, 1000)).then(() => exit());
   })(cid);
 });
