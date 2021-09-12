@@ -27,27 +27,37 @@ fs.rename(
 const web3Client = new Web3Storage({ token: process.env.WEB3TOKEN });
 
 async function storeWithProgress() {
-  const files = await getFilesFromPath(filePath);
-  // show the root cid as soon as it's ready
-  const onRootCidReady = (cid) => {
-    console.log("uploading files with cid:", cid);
-    const appendString = `${appName},${appVersion},${appRegion},${cid},${fileName}`;
-    fs.appendFile("data.csv", appendString, function (err) {
-      if (err) return console.log(err);
-      console.log(`${appendString}\nAppended data to CSV!`);
+  try {
+    const files = await getFilesFromPath(filePath);
+    // show the root cid as soon as it's ready
+    const onRootCidReady = (cid) => {
+      console.log("uploading files with cid:", cid);
+      const appendString = `${appName},${appVersion},${appRegion},${cid},${fileName}`;
+      fs.appendFile("data.csv", appendString, function (err) {
+        if (err) return console.log(err);
+        console.log(`${appendString}\nAppended data to CSV!`);
+      });
+    };
+
+    const totalSize = files.map((f) => f.size).reduce((a, b) => a + b, 0);
+    let uploaded = 0;
+
+    const onStoredChunk = (size) => {
+      uploaded += size;
+      const pct = totalSize / uploaded;
+      console.log(`Uploading... ${100 - pct.toFixed(2)}%`);
+    };
+
+    return web3Client.put(files, {
+      name: fileName,
+      maxRetries: 10,
+      wrapWithDirectory: false,
+      onRootCidReady,
+      onStoredChunk,
     });
-  };
-
-  const totalSize = files.map((f) => f.size).reduce((a, b) => a + b, 0);
-  let uploaded = 0;
-
-  const onStoredChunk = (size) => {
-    uploaded += size;
-    const pct = totalSize / uploaded;
-    console.log(`Uploading... ${pct.toFixed(2)}% complete`);
-  };
-
-  return web3Client.put(files, { onRootCidReady, onStoredChunk });
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 storeWithProgress();
