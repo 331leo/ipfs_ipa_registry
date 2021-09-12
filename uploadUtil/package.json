@@ -1,0 +1,17 @@
+{
+  "name": "web3-storage-quickstart",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Get started using web3.storage in Node.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "minimist": "^1.2.5",
+    "prompt-sync": "^4.2.0",
+    "web3.storage": "^3.1.0"
+  },
+  "author": "YOUR NAME",
+  "license": "(Apache-2.0 AND MIT)"
+}
