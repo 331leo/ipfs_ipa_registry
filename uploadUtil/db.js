@@ -1,6 +1,7 @@
 // Import Packages, Init
-require("dotenv").config();
-var mongoose = require("mongoose");
+import { config } from "dotenv";
+config();
+import mongoose from "mongoose";
 mongoose.connect(process.env.MONGO_URL);
 var db = mongoose.connection;
 
@@ -19,16 +20,17 @@ var IpfsFile = mongoose.model(
     region: String,
     cid: { type: String, required: true, unique: true },
     file: String,
+    artwork: String,
+    bundleID: String,
+    genres: [String],
   }),
   "ipfs"
 );
 
-async function insertData(data) {
+export async function insertData(data) {
   var newIpfsFile = new IpfsFile(data);
   await newIpfsFile.save((e, d) => {
     if (e) throw e;
     if (d) console.log("Successfully inserted data to DB!");
   });
 }
-
-module.exports = { insertData };
