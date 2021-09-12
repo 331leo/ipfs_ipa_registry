@@ -23,6 +23,8 @@ var IpfsFile = mongoose.model(
     artwork: String,
     bundleID: String,
     genres: [String],
+    link: String,
+    artistName: String,
   }),
   "ipfs"
 );
@@ -33,4 +35,5 @@ export async function insertData(data) {
     if (e) throw e;
     if (d) console.log("Successfully inserted data to DB!");
   });
+  return true;
 }
