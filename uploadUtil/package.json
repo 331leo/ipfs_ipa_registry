@@ -10,6 +10,7 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "minimist": "^1.2.5",
+    "mongoose": "^6.0.5",
     "prompt-sync": "^4.2.0",
     "web3.storage": "^3.1.0"
   },
