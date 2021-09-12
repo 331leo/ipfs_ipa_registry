@@ -1,42 +1,55 @@
-//import { Web3Storage, getFilesFromPath } from "web3.storage";
+// Import Packages, Init Project
+require("dotenv").config();
 const { Web3Storage, getFilesFromPath } = require("web3.storage");
 const prompt = require("prompt-sync")();
 const fs = require("fs");
-require("dotenv").config();
+const insertData = require("./db").insertData;
+const { exit } = require("process");
+// var mongoose = require("mongoose");
+// mongoose.connect(process.env.MONGO_URL);
+// var db = mongoose.connection;
 
+// Application Data prompt
 let filePath = prompt("Enter the path to the file: ").replace(/"/g, "");
-
 const appName = prompt("Enter the name of the app: ");
 const appVersion = prompt("Enter the version of the app: ");
 let appRegion = prompt("Enter the region of the app(blank for Global): ");
 appRegion = appRegion ? appRegion === "" : "Global";
-const fileName = `${appName.replace(" ", "_")}-${appVersion}-${appRegion}.ipa`;
-fs.rename(
-  filePath,
-  filePath.replace(filePath.replace(/^.*[\\\/]/, ""), fileName),
-  (err) => {
-    if (err) {
-      console.log(err);
-      throw err;
-    }
-    console.log("finish");
-    filePath = filePath.replace(filePath.replace(/^.*[\\\/]/, ""), fileName);
+
+// Rename File
+const fileName = `${appName.replaceAll(
+  " ",
+  "_"
+)}-${appVersion}-${appRegion}.ipa`;
+let newFilePath = filePath.replace(filePath.replace(/^.*[\\\/]/, ""), fileName);
+fs.rename(filePath, newFilePath, (err) => {
+  if (err) {
+    throw err;
   }
-);
+  console.log("finish");
+});
 
+// Put the file in the IPFS Network
 const web3Client = new Web3Storage({ token: process.env.WEB3TOKEN });
-
 async function storeWithProgress() {
   try {
-    const files = await getFilesFromPath(filePath);
+    const files = await getFilesFromPath(newFilePath);
     // show the root cid as soon as it's ready
     const onRootCidReady = (cid) => {
       console.log("uploading files with cid:", cid);
-      const appendString = `${appName},${appVersion},${appRegion},${cid},${fileName}`;
-      fs.appendFile("data.csv", appendString, function (err) {
-        if (err) return console.log(err);
-        console.log(`${appendString}\nAppended data to CSV!`);
-      });
+      const data = {
+        name: appName,
+        version: appVersion,
+        region: appRegion,
+        cid: cid,
+        file: fileName,
+      };
+      insertData(data);
+      // const appendString = `${appName},${appVersion},${appRegion},${cid},${fileName}`;
+      // fs.appendFile("data.csv", appendString, function (err) {
+      //   if (err) return console.log(err);
+      //   console.log(`${appendString}\nAppended data to CSV!`);
+      // });
     };
 
     const totalSize = files.map((f) => f.size).reduce((a, b) => a + b, 0);
@@ -48,10 +61,10 @@ async function storeWithProgress() {
       console.log(`Uploading... ${100 - pct.toFixed(2)}%`);
     };
 
-    return web3Client.put(files, {
+    return await web3Client.put(files, {
       name: fileName,
       maxRetries: 10,
-      wrapWithDirectory: false,
+      wrapWithDirectory: true,
       onRootCidReady,
       onStoredChunk,
     });
