@@ -3,11 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "main": "index.js",
+  "type": "module",
   "description": "Upload .ipa files to IPFS Blockchain network with organized filename",
   "scripts": {
     "start": "node ."
   },
   "dependencies": {
+    "axios": "^0.21.4",
     "dotenv": "^10.0.0",
     "minimist": "^1.2.5",
     "mongoose": "^6.0.5",
