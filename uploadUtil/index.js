@@ -29,6 +29,7 @@ await new Promise((resolve) => setTimeout(resolve, 1000));
 // Rename File
 const fileName = `${appName
   .replace(/:/, "")
+  .replace(/™/g, "")
   .replace(/ /g, "_")}-${appVersion}-${appRegion}.ipa`;
 let newFilePath = filePath.replace(filePath.replace(/^.*[\\\/]/, ""), fileName);
 fs.rename(filePath, newFilePath, (err) => {
