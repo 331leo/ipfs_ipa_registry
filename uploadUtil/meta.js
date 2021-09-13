@@ -8,7 +8,7 @@ export async function getMeta(appName) {
     trackName: undefined,
     latestVersion: undefined,
     artistName: undefined,
-    link: undefined,
+    storeLink: undefined,
   };
   const response = await axios.get(
     encodeURI(
@@ -25,7 +25,7 @@ export async function getMeta(appName) {
     meta.trackName = metaData[0].trackName;
     meta.latestVersion = metaData[0].version;
     meta.artistName = metaData[0].artistName;
-    meta.link = metaData[0].trackViewUrl;
+    meta.storeLink = metaData[0].trackViewUrl;
   }
   return meta;
 }

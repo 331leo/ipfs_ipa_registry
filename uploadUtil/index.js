@@ -19,7 +19,7 @@ getMeta(appName).then((meta) => {
   if (meta.trackName) {
     appName = meta.trackName;
     console.log(
-      `\nFound App on App Store!: ${meta.trackName}\nLastest Version on App Store: ${meta.latestVersion}\nView on App Store: ${meta.link}\n`
+      `\nFound App on App Store!: ${meta.trackName}\nLastest Version on App Store: ${meta.latestVersion}\nView on App Store: ${meta.storeLink}\n`
     );
   }
 });
@@ -27,10 +27,9 @@ getMeta(appName).then((meta) => {
 await new Promise((resolve) => setTimeout(resolve, 1000));
 
 // Rename File
-const fileName = `${appName.replaceAll(
-  " ",
-  "_"
-)}-${appVersion}-${appRegion}.ipa`;
+const fileName = `${appName
+  .replace(/:/, "")
+  .replace(/ /g, "_")}-${appVersion}-${appRegion}.ipa`;
 let newFilePath = filePath.replace(filePath.replace(/^.*[\\\/]/, ""), fileName);
 fs.rename(filePath, newFilePath, (err) => {
   if (err) {
@@ -93,7 +92,7 @@ storeWithProgress().then((cid) => {
       artwork: meta.artwork,
       bundleID: meta.bundleID,
       genres: meta.genres,
-      link: meta.link,
+      storeLink: meta.storeLink,
       artistName: meta.artistName,
     };
     await insertData(data);

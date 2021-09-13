@@ -23,7 +23,7 @@ var IpfsFile = mongoose.model(
     artwork: String,
     bundleID: String,
     genres: [String],
-    link: String,
+    storeLink: String,
     artistName: String,
   }),
   "ipfs"
